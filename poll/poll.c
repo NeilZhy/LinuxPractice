@@ -22,6 +22,12 @@ int statup(char* ip,int port)
 	local.sin_port = htons(port);    //htons作用是将主机的数字序列转换成网络序列，这里因为使用的是AF_INET
 									//占两个字节的大小，所以使用的是s
 	local.sin_addr.s_addr = inet_addr(ip);   //inet_addr的作用是将点分十进制的字符创装换成网络序列的
+	int on=1;  //允许重新绑定
+	 if((setsockopt(sock,SOL_SOCKET,SO_REUSEADDR,&on,sizeof(on)))<0)  
+	 {  
+		 perror("setsockopt failed");  
+		 exit(EXIT_FAILURE);  
+    } 
 	if(bind(sock,(struct sockaddr*)&local,sizeof(local))<0)
 	{
 		perror("bind error\n");
@@ -88,7 +94,7 @@ int main(int argc,char* argv[])
 					int j = 0;
 					for(;j<MAX;j++)
 					{
-						if((pollarr[j].revents&POLLIN )&&(pollarr[j].fd == listensock))   //监听套接字响应了,且是监听套接字
+						if((pollarr[j].revents&POLLIN )&&(pollarr[j].fd == listensock)&&(pollarr[j].fd != -1))   //监听套接字响应了,且是监听套接字
 							//这里我一开始的时候，使用 的是event，这个是我要告诉系统的
 							//但是应该使用的是revents
 						{
@@ -127,7 +133,7 @@ int main(int argc,char* argv[])
 							}
 	
 						}
-						if((pollarr[j].revents & POLLIN)&&(pollarr[j].fd != listensock))  //读写套接字
+						if((pollarr[j].revents & POLLIN)&&(pollarr[j].fd != listensock)&&(pollarr[j].fd != -1))  //读写套接字,这里加上了一个判断，就是那个fd不能为-1
 						{
 
 							printf("有读写内容了\n");
@@ -148,8 +154,8 @@ int main(int argc,char* argv[])
 								}
 								close(pollarr[j].fd);
 								pollarr[i].fd = -1;
-								pollarr[i].events = 0;
-								pollarr[i].revents = 0;
+							//	pollarr[i].events = 0;
+							//	pollarr[i].revents = 0;  如果这两个放开的话，就直接是poll出错，返回了
 								--nfds;
 							}
 							else
@@ -159,6 +165,7 @@ int main(int argc,char* argv[])
 						}
 						else  //为了完整性，啥都不干
 						{
+							//printf("continue\n");
 							continue;
 						}
 					}
