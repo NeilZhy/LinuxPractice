@@ -9,13 +9,16 @@ void usge()  //用户函数
 
 static void *accept_request(void* arg)
 {
-	int sock = *(int*)arg;
+	int sock = (int)arg;
 	pthread_detach(pthread_self());
 
-	printf("%d\n",sock);
+	printf("我是一个线程%d\n",sock);
 
-	return (void*)123;
-	//return (void *)handler_sock(sock);   //这里是又调用了一个函数，函数参数是一个sock，这个sock就是为了处理获得的链接的
+
+
+
+	//第三步就是编写这个handler_sock这个函数了
+	return (void *)handler_sock(sock);   //这里是又调用了一个函数，函数参数是一个sock，这个sock就是为了处理获得的链接的
 
 }
 
@@ -25,6 +28,10 @@ int main(int argc,char* argv[])
 	{
 		usge();
 	}
+
+
+
+
 	//第一步：创建一个监听套接字
 	//因为我们这里是服务器，要监听来自网络的链接请求，我们的服务器是基于TCP/IP的
 	int listensock = startup(argv[1],atoi(argv[2]));
@@ -32,6 +39,10 @@ int main(int argc,char* argv[])
 	{
 		printf("creat listen success \n");
 	}
+
+
+
+
 	//第二步：不断的获取连接，然后创建线程
 	//线程调用线程函数，去处理各个链接强求
 	while(1)
@@ -48,7 +59,8 @@ int main(int argc,char* argv[])
 		pthread_t tid;
 		//调用线程函数去处理这个链接
 		pthread_create(&tid,NULL,accept_request,(void *)sock);
-
+		sleep(6);
+		pthread_exit(NULL);
 	}
 
 	return 0;

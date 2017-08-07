@@ -14,8 +14,14 @@
 #include<stdlib.h>
 #include<pthread.h>
 
-int startup(char *ip,int port);   
 
+#define SIZE 4096
+#define METHOD_SIZE 64
+#define URL_SIZE SIZE
+
+
+int startup(char *ip,int port);   
+int handler_sock(int sock);
 
 
 
